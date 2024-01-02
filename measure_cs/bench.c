@@ -11,14 +11,21 @@
 #include <sys/stat.h>
 
 #define PIPE_SIZE 65536
-
+#define LOOPS 100000
 int main() {
-  int pipe_ends[2];
+  int first_pipe[2], second_pipe[2];
 
-  if (pipe(pipe_ends) == -1) {
+  if (pipe(first_pipe) == -1) {
+    fprintf(stderr, "%s\n", "Cannot open pipe");
+  }
+  if (pipe(second_pipe) == -1) {
     fprintf(stderr, "%s\n", "Cannot open pipe");
   }
 
+  for (int i = 0; i < LOOPS; i++) {
+
+  }
+  
   //printf("%d,%d\n", fcntl(pipe_ends[0], F_GETPIPE_SZ), fcntl(pipe_ends[1], F_GETPIPE_SZ));
   pid_t rc = fork();
 
