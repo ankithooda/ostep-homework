@@ -1,5 +1,7 @@
 clean:
 	rm -rf bin && rm -f measure_cs
+bench:
+	mkdir -p bin && gcc -Wall -Wextra -std=c2x -pedantic -g -o bin/bench bench.c
 syscall:
 	mkdir -p bin && gcc -Wall -Wextra -std=c2x -pedantic -g -o bin/bench_syscall bench_syscall.c
 measure_cs:

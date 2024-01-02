@@ -12,6 +12,19 @@
 
 #define PIPE_SIZE 65536
 #define LOOPS 100000
+
+/*
+  PROCESS 1 (Parent)
+  WRITE PIPE 1        NO BLOCK
+  READ PIPE 2         BLOCK
+
+  PROCESS 2 (Child)
+  READ PIPE 1         NO BLOCK
+  WRITE PIPE 2        NO BLOCK
+  ---
+  2nd Iter
+  READ PIPE 1         BLOCK
+*/
 int main() {
   int first_pipe[2], second_pipe[2];
 
@@ -22,62 +35,35 @@ int main() {
     fprintf(stderr, "%s\n", "Cannot open pipe");
   }
 
-  for (int i = 0; i < LOOPS; i++) {
-
-  }
-  
-  //printf("%d,%d\n", fcntl(pipe_ends[0], F_GETPIPE_SZ), fcntl(pipe_ends[1], F_GETPIPE_SZ));
   pid_t rc = fork();
 
 
   if (rc == -1) {
     exit(EXIT_FAILURE);
   } else if (rc == 0) {
-    close(pipe_ends[1]);
 
-    /*
-    while (read(pipe_ends[0], &buf, 1) > 0) {
-      write(STDOUT_FILENO, &buf, 1);
-    }
-    */
-    char *buf;
-    buf = malloc(PIPE_SIZE * sizeof(char));
+    close(first_pipe[1]);
+    close(second_pipe[0]);
 
-    FILE *outfile = fopen("child.out", "w");
-    if (outfile == NULL) {
-      fprintf(stderr, "%s\n", "Could not open write file");
-    } else {
-      fprintf(outfile, "%s\n", "File opened");
-    }
-    // Read from pipe.
-    size_t read_count;
+    char buf;
     while (1) {
-      read_count = read(pipe_ends[0], buf, PIPE_SIZE);
-      if (read_count > 0) {
-        fprintf(outfile, "Read from pipe - %ld\n", read_count);
-      } else {
-        fprintf(outfile, "%s\n", "Could not read from pipe");
-      }
-      fflush(outfile);
-      sleep(30);
+      read(first_pipe[0], &buf, 1);
+      write(second_pipe[1], "X", 1);
     }
-    close(pipe_ends[0]);
+    close(first_pipe[0]);
+    close(second_pipe[1]);
     exit(EXIT_SUCCESS);
 
   } else {
 
-    close(pipe_ends[0]);
-    char data[PIPE_SIZE];
-    // Read from infile
-    FILE *data_in = fopen("data.in", "r");
-    size_t read_count = fread(data, 1, PIPE_SIZE, data_in);
+    close(first_pipe[0]);
+    close(second_pipe[1]);
 
-    printf("Read %ld from data.in file\n", read_count);
-
+    char buf;
     // Write to pipe.
     while (1) {
-      size_t write_count = write(pipe_ends[1], data, PIPE_SIZE);
-      printf("Wrote %ld to pipe\n", write_count);
+      write(first_pipe[1], "X", 1);
+      read(second_pipe[0], &buf, 1);
     }
     wait(NULL);
   }

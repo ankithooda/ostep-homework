@@ -11,17 +11,22 @@
 #include <sys/stat.h>
 
 #define PIPE_SIZE 65536
-#define SAMPLES 100000
+#define SAMPLES 500000
 int main() {
   int pipe_ends[2];
+  char buf;
   pipe(pipe_ends);
-  unsigned long before, after;
+  ssize_t c;
+  unsigned long before, after, diff = 0;
   for (int i = 0; i < SAMPLES; i++) {
-    before += __rdtsc();
-    write(pipe_ends[0], NULL, 0);
-    after += __rdtsc();
+    before = __rdtsc();
+    c = write(pipe_ends[1], "X", 1);
+    c = read(pipe_ends[0], &buf, 1);
+    after = __rdtsc();
+    diff = diff + (after - before);
+    //printf("%ld\n", c);
   }
 
-  printf("Cycles - %ld\n", (after - before)/SAMPLES);
+  printf("Cycles - %ld\n", diff/SAMPLES);
   exit(EXIT_SUCCESS);
 }
