@@ -9,9 +9,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sched.h>
 
-#define PIPE_SIZE 65536
-#define LOOPS 100000
+#define LOOPS 3000000
 
 /*
   PROCESS 1 (Parent)
@@ -34,6 +34,11 @@ int main() {
   if (pipe(second_pipe) == -1) {
     fprintf(stderr, "%s\n", "Cannot open pipe");
   }
+
+
+  cpu_set_t cpu_set;
+  CPU_ZERO(&cpu_set);
+  CPU_SET(0, &cpu_set);
 
   pid_t rc = fork();
 
@@ -61,10 +66,15 @@ int main() {
 
     char buf;
     // Write to pipe.
-    while (1) {
+    unsigned long before, after;
+    before = __rdtsc();
+    for (int i = 0; i < LOOPS; i++) {
       write(first_pipe[1], "X", 1);
       read(second_pipe[0], &buf, 1);
+      //printf("Loop iteration %d\n", i);
     }
+    after = __rdtsc();
+    printf("Cycles %ld\n", ((after - before)/LOOPS));
     wait(NULL);
   }
   exit(EXIT_SUCCESS);
