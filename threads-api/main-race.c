@@ -11,8 +11,14 @@ void* worker(void* arg) {
 
 int main(int argc, char *argv[]) {
     pthread_t p;
+    pthread_mutex_t lock;
     Pthread_create(&p, NULL, worker, NULL);
+
+    Mutex_init(&lock);
     balance++; // unprotected access
+    Mutex_unlock(&lock);
+
     Pthread_join(p, NULL);
+    printf("Balance %d\n", balance);
     return 0;
 }
