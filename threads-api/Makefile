@@ -21,3 +21,6 @@ main-signal: main-signal.c common_threads.h
 main-signal-cv: main-signal-cv.c common_threads.h
 	gcc -o main-signal-cv main-signal-cv.c $(FLAGS)
 
+counter:
+	gcc -o counter counter.c $(FLAGS)
+
